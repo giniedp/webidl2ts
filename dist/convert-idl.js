@@ -43,7 +43,7 @@ function convertIDL(rootTypes, options) {
                 nodes.push(convertInterfaceIncludes(rootType));
                 break;
             case 'enum':
-                nodes.push(convertEnum(rootType));
+                nodes.push(convertEnum(rootType, options));
                 break;
             case 'callback':
                 nodes.push(convertCallback(rootType));
@@ -81,14 +81,14 @@ function convertInterface(idl, options) {
                 break;
             case 'operation':
                 if (member.name === idl.name) {
-                    members.push(convertMemberConstructor(member));
+                    members.push(convertMemberConstructor(member, options));
                 }
                 else {
                     members.push(convertMemberOperation(member));
                 }
                 break;
             case 'constructor':
-                members.push(convertMemberConstructor(member));
+                members.push(convertMemberConstructor(member, options));
                 break;
             case 'field':
                 members.push(convertMemberField(member));
@@ -104,6 +104,9 @@ function convertInterface(idl, options) {
                 break;
         }
     });
+    if (options === null || options === void 0 ? void 0 : options.emscripten) {
+        return ts.createClassDeclaration(undefined, [], ts.createIdentifier(idl.name), undefined, !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)], members);
+    }
     return ts.createInterfaceDeclaration(undefined, [], ts.createIdentifier(idl.name), undefined, !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)], members);
 }
 function convertInterfaceIncludes(idl) {
@@ -120,8 +123,11 @@ function convertMemberOperation(idl) {
     var args = idl.arguments.map(convertArgument);
     return ts.createMethodSignature([], args, convertType(idl.idlType), idl.name, undefined);
 }
-function convertMemberConstructor(idl) {
+function convertMemberConstructor(idl, options) {
     var args = idl.arguments.map(convertArgument);
+    if (options.emscripten) {
+        return ts.createMethodSignature([], args, undefined, 'constructor', undefined);
+    }
     return ts.createConstructSignature([], args, undefined);
 }
 function convertMemberField(idl) {
@@ -164,7 +170,11 @@ function convertType(idl) {
     console.log(newUnsupportedError('Unsupported IDL type', idl));
     return ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
 }
-function convertEnum(idl) {
+function convertEnum(idl, options) {
+    if (options === null || options === void 0 ? void 0 : options.emscripten) {
+        var members = idl.values.map(function (it) { return ts.createEnumMember(it.value, null); });
+        return ts.createEnumDeclaration([], [], idl.name, members);
+    }
     return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, ts.createUnionTypeNode(idl.values.map(function (it) { return ts.createLiteralTypeNode(ts.createStringLiteral(it.value)); })));
 }
 function convertCallback(idl) {

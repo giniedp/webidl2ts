@@ -128,10 +128,10 @@ function convert(options) {
                     tsString = null;
                     if (options.emscripten) {
                         if (options.ambient) {
-                            tsString = print_ts_1.printEmscriptenModule(options.module, ts);
+                            tsString = print_ts_1.printEmscriptenModuleAmbient(options.module, ts);
                         }
                         else {
-                            tsString = print_ts_1.printEmscriptenModuleAmbient(options.module, ts);
+                            tsString = print_ts_1.printEmscriptenModule(options.module, ts);
                         }
                     }
                     else {
