@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "declaration": true,
+    "target": "es5",
+    "newLine": "LF",
+    "baseUrl": ".",
+    "typeRoots": ["node_modules/@types", "types"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules"]
+}
