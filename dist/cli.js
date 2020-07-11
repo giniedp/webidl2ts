@@ -68,7 +68,6 @@ function main() {
                 describe: 'Output file path',
                 alias: 'out',
                 default: 'index.d.ts',
-                boolean: true
             })
                 .option('e', {
                 describe: 'Enable Emscripten mode',
