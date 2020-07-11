@@ -54,7 +54,7 @@ export function convertIDL(rootTypes: webidl2.IDLRootType[], options?: Options):
         nodes.push(convertInterfaceIncludes(rootType))
         break
       case 'enum':
-        nodes.push(convertEnum(rootType))
+        nodes.push(convertEnum(rootType, options))
         break
       case 'callback':
         nodes.push(convertCallback(rootType))
@@ -101,13 +101,13 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         break
       case 'operation':
         if (member.name === idl.name) {
-          members.push(convertMemberConstructor(member))
+          members.push(convertMemberConstructor(member, options))
         } else {
           members.push(convertMemberOperation(member))
         }
         break
       case 'constructor':
-        members.push(convertMemberConstructor(member))
+        members.push(convertMemberConstructor(member, options))
         break
       case 'field':
         members.push(convertMemberField(member))
@@ -128,6 +128,17 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         break
     }
   })
+
+  if (options?.emscripten) {
+    return ts.createClassDeclaration(
+      undefined,
+      [],
+      ts.createIdentifier(idl.name),
+      undefined,
+      !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)],
+      members as any
+    )
+  }
 
   return ts.createInterfaceDeclaration(
     undefined,
@@ -165,8 +176,11 @@ function convertMemberOperation(idl: webidl2.OperationMemberType) {
   return ts.createMethodSignature([], args, convertType(idl.idlType), idl.name, undefined)
 }
 
-function convertMemberConstructor(idl: webidl2.ConstructorMemberType | webidl2.OperationMemberType) {
+function convertMemberConstructor(idl: webidl2.ConstructorMemberType | webidl2.OperationMemberType, options?: Options) {
   const args = idl.arguments.map(convertArgument)
+  if (options.emscripten) {
+    return ts.createMethodSignature([], args, undefined, 'constructor', undefined)
+  }
   return ts.createConstructSignature([], args, undefined)
 }
 
@@ -237,7 +251,12 @@ function convertType(idl: webidl2.IDLTypeDescription): ts.TypeNode {
   return ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword)
 }
 
-function convertEnum(idl: webidl2.EnumType) {
+function convertEnum(idl: webidl2.EnumType, options?: Options) {
+  if (options?.emscripten) {
+    const members = idl.values.map(it => ts.createEnumMember(it.value, null))
+    return ts.createEnumDeclaration([], [], idl.name, members)
+  }
+
   return ts.createTypeAliasDeclaration(
     undefined,
     undefined,

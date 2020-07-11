@@ -86,9 +86,9 @@ async function convert(options: Options) {
   let tsString: string = null
   if (options.emscripten) {
     if (options.ambient) {
-      tsString = printEmscriptenModule(options.module, ts)
-    } else {
       tsString = printEmscriptenModuleAmbient(options.module, ts)
+    } else {
+      tsString = printEmscriptenModule(options.module, ts)
     }
   } else {
     tsString = printTs(ts)
