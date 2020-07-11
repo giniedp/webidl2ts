@@ -2,9 +2,9 @@
   "name": "webidl2ts",
   "version": "1.0.0",
   "description": "Converts Web IDL to Typescript (.d.ts)",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod 755 dist/cli.js",
     "lint": "tsc --noEmit"
   },
   "repository": {
@@ -16,7 +16,6 @@
   "license": "MIT",
   "files": [
     "dist",
-    "index.js",
     "Readme.md",
     "package.json"
   ],
@@ -31,5 +30,8 @@
     "yargs": "^15.4.1",
     "typescript": "^3.9.6",
     "webidl2": "^23.12.1"
+  },
+  "bin" : {
+    "webidl2ts" : "./dist/cli.js"
   }
 }

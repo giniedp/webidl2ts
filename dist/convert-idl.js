@@ -7,6 +7,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertIDL = void 0;
 var ts = require("typescript");
 var bufferSourceTypes = ["ArrayBuffer", "ArrayBufferView", "DataView", "Int8Array", "Uint8Array", "Int16Array", "Uint16Array", "Uint8ClampedArray", "Int32Array", "Uint32Array", "Float32Array", "Float64Array"];
 var integerTypes = ["byte", "octet", "short", "unsigned short", "long", "unsigned long", "long long", "unsigned long long"];

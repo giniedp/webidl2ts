@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseIDL = void 0;
 var webidl2 = require("webidl2");
 function parseIDL(idlString, options) {
     return __awaiter(this, void 0, void 0, function () {

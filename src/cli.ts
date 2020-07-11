@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as yargs from 'yargs'
 import { parseIDL } from './parse-idl'
 import { convertIDL } from './convert-idl'

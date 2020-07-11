@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fixes = void 0;
 exports.fixes = {
     'inheritance': function (idlString) {
         // need fix for error:

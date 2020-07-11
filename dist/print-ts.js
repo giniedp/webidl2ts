@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.printEmscriptenModuleAmbient = exports.printEmscriptenModule = exports.printTs = void 0;
 var ts = require("typescript");
 function printTs(nodes) {
     var file = ts.createSourceFile("index.d.ts", '', ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
