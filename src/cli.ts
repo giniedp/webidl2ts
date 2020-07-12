@@ -3,7 +3,7 @@
 import * as yargs from 'yargs'
 import { parseIDL } from './parse-idl'
 import { convertIDL } from './convert-idl'
-import { printTs, printEmscriptenModule, printEmscriptenModuleAmbient } from './print-ts'
+import { printTs, printEmscriptenModule } from './print-ts'
 import * as fs from 'fs'
 import { fetchIDL } from './fetch-idl'
 import { Options } from './types'
@@ -61,7 +61,6 @@ async function main() {
     module: argv.m
   }
 
-  console.log(JSON.stringify(options))
   if (!options.input) {
     process.exit(1)
   }
@@ -70,7 +69,6 @@ async function main() {
 }
 
 async function convert(options: Options) {
-  console.log('convert', options.input)
   const idlString = await fetchIDL(options.input);
   const idl = await parseIDL(idlString, {
     preprocess: (idl: string) => {
@@ -85,16 +83,11 @@ async function convert(options: Options) {
 
   let tsString: string = null
   if (options.emscripten) {
-    if (options.ambient) {
-      tsString = printEmscriptenModuleAmbient(options.module, ts)
-    } else {
-      tsString = printEmscriptenModule(options.module, ts)
-    }
+    tsString = printEmscriptenModule(options.module, ts, !options.ambient)
   } else {
     tsString = printTs(ts)
   }
 
-  console.log('writing', options.output)
   fs.writeFileSync(options.output, tsString);
 }
 

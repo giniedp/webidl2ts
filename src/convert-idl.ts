@@ -287,6 +287,6 @@ function newUnsupportedError(message: string, idl: any) {
   ${message}
   ${JSON.stringify(idl, null, 2)}
 
-  Please file an issue and provide the used idl file.
+  Please file an issue at https://github.com/giniedp/webidl2ts and provide the used idl file or example.
 `)
 }

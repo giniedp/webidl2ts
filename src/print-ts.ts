@@ -6,66 +6,57 @@ export function printTs(nodes: ts.Statement[]) {
   return nodes.map((it) => printer.printNode(ts.EmitHint.Unspecified, it, file)).join('\n')
 }
 
-export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[]): string {
-
-  // export default Ammo;
-  const moduleAlias = ts.createExportAssignment(
-    /* decorators     */[],
-    /* modifiers      */[ts.createModifier(ts.SyntaxKind.DefaultKeyword)],
-    /* isExportEquals */ false,
-    /* expression     */ ts.createIdentifier(moduleName),
+export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[], defaultExport: boolean): string {
+  // function destroy(obj: any): void;
+  nodes.unshift(
+    ts.createFunctionDeclaration(
+      /* decorators     */[],
+      /* modifiers      */[],
+      /* asteriskToken  */ undefined,
+      /* name           */ 'destroy',
+      /* typeParameters */[],
+      /* parameters     */[ts.createParameter([], [], undefined, 'obj', undefined, ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))],
+      /* type           */ ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+      /* body           */ undefined
+    )
   )
 
+  const result: ts.Statement[] = []
+  if (defaultExport) {
+    // export default Ammo;
+    result.push(
+      ts.createExportAssignment(
+        /* decorators     */[],
+        /* modifiers      */[ts.createModifier(ts.SyntaxKind.DefaultKeyword)],
+        /* isExportEquals */ false,
+        /* expression     */ ts.createIdentifier(moduleName),
+      )
+    )
+  }
+
   // export function Ammo<T>(ns?: T): Promise<T & typeof Ammo>;
-  const moduleExport = ts.createFunctionDeclaration(
-    /* decorators     */[],
-    /* modifiers      */[ts.createModifier(ts.SyntaxKind.ExportKeyword)],
-    /* asteriskToken  */ undefined,
-    /* name           */ moduleName,
-    /* typeParameters */[ts.createTypeParameterDeclaration('T')],
-    /* parameters     */[ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', []))],
-    /* type           */ ts.createTypeReferenceNode('Promise', [ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))])]),
-    /* body           */ undefined
+  result.push(
+    ts.createFunctionDeclaration(
+      /* decorators     */[],
+      /* modifiers      */[ts.createModifier(ts.SyntaxKind.ExportKeyword)],
+      /* asteriskToken  */ undefined,
+      /* name           */ moduleName,
+      /* typeParameters */[ts.createTypeParameterDeclaration('T')],
+      /* parameters     */[ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', []))],
+      /* type           */ ts.createTypeReferenceNode('Promise', [ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))])]),
+      /* body           */ undefined
+    )
   )
 
   // export declare module Ammo {
-  const module = ts.createModuleDeclaration(
-    /* decorators */[],
-    /* modifiers  */[ts.createModifier(ts.SyntaxKind.ExportKeyword), ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
-    /* name       */ ts.createIdentifier(moduleName),
-    /* body       */ ts.createModuleBlock(nodes)
+  result.push(
+    ts.createModuleDeclaration(
+      /* decorators */[],
+      /* modifiers  */[ts.createModifier(ts.SyntaxKind.ExportKeyword), ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+      /* name       */ ts.createIdentifier(moduleName),
+      /* body       */ ts.createModuleBlock(nodes)
+    )
   )
 
-  return printTs([
-    moduleAlias,
-    moduleExport,
-    module,
-  ])
-}
-
-export function printEmscriptenModuleAmbient(moduleName: string, nodes: ts.Statement[]): string {
-
-  // declare function Ammo<T>(ns?: T): Promise<T & typeof Ammo>;
-  const moduleLoader = ts.createFunctionDeclaration(
-    /* decorators     */[],
-    /* modifiers      */[ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
-    /* asteriskToken  */ undefined,
-    /* name           */ moduleName,
-    /* typeParameters */[ts.createTypeParameterDeclaration('T')],
-    /* parameters     */[ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', []))],
-    /* type           */ ts.createTypeReferenceNode('Promise', [ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))])]),
-    /* body           */ undefined
-  )
-  // declare module Ammo { ... }
-  const module = ts.createModuleDeclaration(
-    /* decorators */[],
-    /* modifiers  */[ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
-    /* name       */ ts.createIdentifier(moduleName),
-    /* body       */ ts.createModuleBlock(nodes)
-  )
-
-  return printTs([
-    moduleLoader,
-    module,
-  ])
+  return printTs(result)
 }
