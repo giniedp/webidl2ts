@@ -17,8 +17,8 @@ async function main() {
     .example('$0 -i https://www.w3.org/TR/webxr/ -o webxr.d.ts', 'Generate from online documentation')
     .example('$0 -i https://www.khronos.org/registry/webgl/specs/latest/2.0/webgl2.idl -o webgl.d.ts', 'Generate from online idl file')
     .example('$0 -i ./my.idl -o my.d.ts', 'Generate local idl file')
-    .example('$0 -i ./ammo.idl -o ammo.d.ts -m Ammo -e', 'Generate emscripten module')
-    .example('$0 -i ./ammo.idl -o ammo.d.ts -m Ammo -e -a', 'Generate emscripten module with ambiend declaration')
+    .example('$0 -i ./ammo.idl -o ammo.d.ts -n Ammo -ed', 'Generate a d.ts with default export for Ammo')
+    .example('$0 -i ./ammo.idl -o ammo.d.ts -n Ammo -e', 'Generate a d.ts with ambient declaration only for Ammo')
 
     .help('h')
     .alias('h', 'help')
@@ -31,7 +31,7 @@ async function main() {
     .option('o', {
       describe: 'Output file path',
       alias: 'out',
-      default: 'index.d.ts',
+      demand: true
     })
     .option('e', {
       describe: 'Enable Emscripten mode',
@@ -39,26 +39,25 @@ async function main() {
       default: false,
       boolean: true,
     })
-    .option('a', {
-      describe: 'Emit ambient declaration (emscripten mode)',
-      alias: 'ambient',
+    .option('n', {
+      describe: 'Name of the module (emscripten mode)',
+      alias: 'name',
+      default: 'Module'
+    })
+    .option('d', {
+      describe: 'Write default export (emscripten mode)',
+      alias: 'default-export',
       default: false,
       boolean: true
     })
-    .option('m', {
-      describe: 'Module name (emscripten mode)',
-      alias: 'module',
-      default: 'Module'
-    })
-
     .argv
 
   const options: Options = {
     input: argv.i as string,
-    output: argv.o,
+    output: argv.o as string,
     emscripten: argv.e,
-    ambient: argv.a,
-    module: argv.m
+    defaultExport: argv.d,
+    module: argv.n
   }
 
   if (!options.input) {
@@ -83,7 +82,7 @@ async function convert(options: Options) {
 
   let tsString: string = null
   if (options.emscripten) {
-    tsString = printEmscriptenModule(options.module, ts, !options.ambient)
+    tsString = printEmscriptenModule(options.module, ts, options.defaultExport)
   } else {
     tsString = printTs(ts)
   }
