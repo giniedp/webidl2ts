@@ -38,7 +38,7 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
   result.push(
     ts.createFunctionDeclaration(
       /* decorators     */[],
-      /* modifiers      */[ts.createModifier(ts.SyntaxKind.ExportKeyword)],
+      /* modifiers      */[ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
       /* asteriskToken  */ undefined,
       /* name           */ moduleName,
       /* typeParameters */[ts.createTypeParameterDeclaration('T')],
@@ -52,7 +52,7 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
   result.push(
     ts.createModuleDeclaration(
       /* decorators */[],
-      /* modifiers  */[ts.createModifier(ts.SyntaxKind.ExportKeyword), ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+      /* modifiers  */[ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
       /* name       */ ts.createIdentifier(moduleName),
       /* body       */ ts.createModuleBlock(nodes)
     )

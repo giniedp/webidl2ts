@@ -31,7 +31,7 @@ function printEmscriptenModule(moduleName, nodes, defaultExport) {
     // export function Ammo<T>(ns?: T): Promise<T & typeof Ammo>;
     result.push(ts.createFunctionDeclaration(
     /* decorators     */ [], 
-    /* modifiers      */ [ts.createModifier(ts.SyntaxKind.ExportKeyword)], 
+    /* modifiers      */ [ts.createModifier(ts.SyntaxKind.DeclareKeyword)], 
     /* asteriskToken  */ undefined, 
     /* name           */ moduleName, 
     /* typeParameters */ [ts.createTypeParameterDeclaration('T')], 
@@ -41,7 +41,7 @@ function printEmscriptenModule(moduleName, nodes, defaultExport) {
     // export declare module Ammo {
     result.push(ts.createModuleDeclaration(
     /* decorators */ [], 
-    /* modifiers  */ [ts.createModifier(ts.SyntaxKind.ExportKeyword), ts.createModifier(ts.SyntaxKind.DeclareKeyword)], 
+    /* modifiers  */ [ts.createModifier(ts.SyntaxKind.DeclareKeyword)], 
     /* name       */ ts.createIdentifier(moduleName), 
     /* body       */ ts.createModuleBlock(nodes)));
     return printTs(result);
