@@ -55,8 +55,8 @@ function main() {
                 .example('$0 -i https://www.w3.org/TR/webxr/ -o webxr.d.ts', 'Generate from online documentation')
                 .example('$0 -i https://www.khronos.org/registry/webgl/specs/latest/2.0/webgl2.idl -o webgl.d.ts', 'Generate from online idl file')
                 .example('$0 -i ./my.idl -o my.d.ts', 'Generate local idl file')
-                .example('$0 -i ./ammo.idl -o ammo.d.ts -m Ammo -e', 'Generate emscripten module')
-                .example('$0 -i ./ammo.idl -o ammo.d.ts -m Ammo -e -a', 'Generate emscripten module with ambiend declaration')
+                .example('$0 -i ./ammo.idl -o ammo.d.ts -n Ammo -ed', 'Generate a d.ts with default export for Ammo')
+                .example('$0 -i ./ammo.idl -o ammo.d.ts -n Ammo -e', 'Generate a d.ts with ambient declaration only for Ammo')
                 .help('h')
                 .alias('h', 'help')
                 .option('i', {
@@ -67,7 +67,7 @@ function main() {
                 .option('o', {
                 describe: 'Output file path',
                 alias: 'out',
-                default: 'index.d.ts',
+                demand: true
             })
                 .option('e', {
                 describe: 'Enable Emscripten mode',
@@ -75,26 +75,25 @@ function main() {
                 default: false,
                 boolean: true,
             })
-                .option('a', {
-                describe: 'Emit ambient declaration (emscripten mode)',
-                alias: 'ambient',
+                .option('n', {
+                describe: 'Name of the module (emscripten mode)',
+                alias: 'name',
+                default: 'Module'
+            })
+                .option('d', {
+                describe: 'Write default export (emscripten mode)',
+                alias: 'default-export',
                 default: false,
                 boolean: true
-            })
-                .option('m', {
-                describe: 'Module name (emscripten mode)',
-                alias: 'module',
-                default: 'Module'
             })
                 .argv;
             options = {
                 input: argv.i,
                 output: argv.o,
                 emscripten: argv.e,
-                ambient: argv.a,
-                module: argv.m
+                defaultExport: argv.d,
+                module: argv.n
             };
-            console.log(JSON.stringify(options));
             if (!options.input) {
                 process.exit(1);
             }
@@ -108,9 +107,7 @@ function convert(options) {
         var idlString, idl, ts, tsString;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    console.log('convert', options.input);
-                    return [4 /*yield*/, fetch_idl_1.fetchIDL(options.input)];
+                case 0: return [4 /*yield*/, fetch_idl_1.fetchIDL(options.input)];
                 case 1:
                     idlString = _a.sent();
                     return [4 /*yield*/, parse_idl_1.parseIDL(idlString, {
@@ -127,17 +124,11 @@ function convert(options) {
                     ts = convert_idl_1.convertIDL(idl, options);
                     tsString = null;
                     if (options.emscripten) {
-                        if (options.ambient) {
-                            tsString = print_ts_1.printEmscriptenModuleAmbient(options.module, ts);
-                        }
-                        else {
-                            tsString = print_ts_1.printEmscriptenModule(options.module, ts);
-                        }
+                        tsString = print_ts_1.printEmscriptenModule(options.module, ts, options.defaultExport);
                     }
                     else {
                         tsString = print_ts_1.printTs(ts);
                     }
-                    console.log('writing', options.output);
                     fs.writeFileSync(options.output, tsString);
                     return [2 /*return*/];
             }

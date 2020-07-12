@@ -181,5 +181,5 @@ function convertCallback(idl) {
     return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, ts.createFunctionTypeNode(undefined, idl.arguments.map(convertArgument), convertType(idl.idlType)));
 }
 function newUnsupportedError(message, idl) {
-    return new Error("\n  " + message + "\n  " + JSON.stringify(idl, null, 2) + "\n\n  Please file an issue and provide the used idl file.\n");
+    return new Error("\n  " + message + "\n  " + JSON.stringify(idl, null, 2) + "\n\n  Please file an issue at https://github.com/giniedp/webidl2ts and provide the used idl file or example.\n");
 }
