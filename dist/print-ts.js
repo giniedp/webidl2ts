@@ -80,7 +80,7 @@ function emscriptenAdditions() {
         ['HEAPU16', Uint16Array.name],
         ['HEAPU32', Uint32Array.name],
         ['HEAPF32', Float32Array.name],
-        ['HEAPF32', Float64Array.name],
+        ['HEAPF64', Float64Array.name],
     ];
     for (var _i = 0, heaps_1 = heaps; _i < heaps_1.length; _i++) {
         var _a = heaps_1[_i], name_1 = _a[0], type = _a[1];

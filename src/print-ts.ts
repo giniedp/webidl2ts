@@ -131,7 +131,7 @@ function emscriptenAdditions() {
     ['HEAPU16', Uint16Array.name],
     ['HEAPU32', Uint32Array.name],
     ['HEAPF32', Float32Array.name],
-    ['HEAPF32', Float64Array.name],
+    ['HEAPF64', Float64Array.name],
   ]
   for (const [name, type] of heaps) {
     result.push(
