@@ -43,7 +43,7 @@ function convertIDL(rootTypes, options) {
                 nodes.push(convertInterfaceIncludes(rootType));
                 break;
             case 'enum':
-                nodes.push(convertEnum(rootType, options));
+                nodes.push(convertEnum(rootType));
                 break;
             case 'callback':
                 nodes.push(convertCallback(rootType));
@@ -170,11 +170,7 @@ function convertType(idl) {
     console.log(newUnsupportedError('Unsupported IDL type', idl));
     return ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword);
 }
-function convertEnum(idl, options) {
-    if (options === null || options === void 0 ? void 0 : options.emscripten) {
-        var members = idl.values.map(function (it) { return ts.createEnumMember(it.value, null); });
-        return ts.createEnumDeclaration([], [], idl.name, members);
-    }
+function convertEnum(idl) {
     return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, ts.createUnionTypeNode(idl.values.map(function (it) { return ts.createLiteralTypeNode(ts.createStringLiteral(it.value)); })));
 }
 function convertCallback(idl) {
