@@ -1,6 +1,6 @@
 {
   "name": "webidl2ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts Web IDL to Typescript (.d.ts)",
   "main": "dist/index.js",
   "scripts": {
