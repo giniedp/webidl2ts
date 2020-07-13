@@ -7,7 +7,10 @@ export function printTs(nodes: ts.Statement[]) {
 }
 
 export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[], defaultExport: boolean): string {
-  // function destroy(obj: any): void;
+
+  // adds emscripten specific types
+  //
+  //     function destroy(obj: any): void;
   nodes.unshift(
     ts.createFunctionDeclaration(
       /* decorators     */[],
@@ -21,9 +24,87 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
     )
   )
 
+  // adds malloc function
+  //
+  //     function _malloc(size: number): number;
+  nodes.unshift(
+    ts.createFunctionDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      ts.createIdentifier("_malloc"),
+      undefined,
+      [ts.createParameter(
+        undefined,
+        undefined,
+        undefined,
+        ts.createIdentifier("size"),
+        undefined,
+        ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+        undefined
+      )],
+      ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+      undefined
+    )
+  )
+
+  // adds free function
+  //
+  //     function _free(size: number): number;
+  nodes.unshift(
+    ts.createFunctionDeclaration(
+      undefined,
+      undefined,
+      undefined,
+      ts.createIdentifier("_free"),
+      undefined,
+      [ts.createParameter(
+        undefined,
+        undefined,
+        undefined,
+        ts.createIdentifier("ptr"),
+        undefined,
+        ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+        undefined
+      )],
+      ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+      undefined
+    )
+  )
+  // adds HEAP* properties
+  const heaps = [
+    ['HEAP8', Int8Array.name],
+    ['HEAP16', Int16Array.name],
+    ['HEAP32', Int32Array.name],
+    ['HEAPU8', Uint8Array.name],
+    ['HEAPU16', Uint16Array.name],
+    ['HEAPU32', Uint32Array.name],
+    ['HEAPF32', Float32Array.name],
+    ['HEAPF32', Float64Array.name],
+  ]
+  for (const [name, type] of heaps) {
+    nodes.unshift(
+      ts.createVariableStatement(
+        undefined,
+        ts.createVariableDeclarationList(
+          [ts.createVariableDeclaration(
+            ts.createIdentifier(name),
+            ts.createTypeReferenceNode(
+              ts.createIdentifier(type),
+              undefined
+            ),
+            undefined
+          )],
+          ts.NodeFlags.Const
+        )
+      ),
+    )
+  }
+
   const result: ts.Statement[] = []
   if (defaultExport) {
-    // export default Ammo;
+    // adds default export
+    //    export default Module;
     result.push(
       ts.createExportAssignment(
         /* decorators     */[],
@@ -34,7 +115,8 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
     )
   }
 
-  // export function Ammo<T>(ns?: T): Promise<T & typeof Ammo>;
+  // adds module function
+  //    declare function Module<T>(target?: T): Promise<T & typeof Module>;
   result.push(
     ts.createFunctionDeclaration(
       /* decorators     */[],
@@ -48,7 +130,10 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
     )
   )
 
-  // export declare module Ammo {
+  // adds module declaration with all types
+  //    export declare module Module {
+  //      ...
+  //    }
   result.push(
     ts.createModuleDeclaration(
       /* decorators */[],

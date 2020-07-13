@@ -54,7 +54,7 @@ export function convertIDL(rootTypes: webidl2.IDLRootType[], options?: Options):
         nodes.push(convertInterfaceIncludes(rootType))
         break
       case 'enum':
-        nodes.push(convertEnum(rootType, options))
+        nodes.push(convertEnum(rootType))
         break
       case 'callback':
         nodes.push(convertCallback(rootType))
@@ -251,12 +251,7 @@ function convertType(idl: webidl2.IDLTypeDescription): ts.TypeNode {
   return ts.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword)
 }
 
-function convertEnum(idl: webidl2.EnumType, options?: Options) {
-  if (options?.emscripten) {
-    const members = idl.values.map(it => ts.createEnumMember(it.value, null))
-    return ts.createEnumDeclaration([], [], idl.name, members)
-  }
-
+function convertEnum(idl: webidl2.EnumType) {
   return ts.createTypeAliasDeclaration(
     undefined,
     undefined,

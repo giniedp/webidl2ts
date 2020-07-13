@@ -106,8 +106,7 @@ Some types are generated differently
 
 || `-e=true` | `-e=false` |
 |---|---|---|
-|interfaces| generated as classes | generated as interfaces |
-|enums| generated as enums e.g. `enum foo { bar, baz }` | generated as union types e.g. `type foo = 'bar' | 'baz'` |
+|interfaces| generated as classes | generated as interfaces and declared vars |
 |attributes| generated with `get_` and `set_` prefix | generated as properties |
 
 The generated d.ts output includes the following Module definition with `-e` enabled
@@ -116,6 +115,16 @@ The generated d.ts output includes the following Module definition with `-e` ena
 declare function Module<T>(target?: T): Promise<T & typeof Module>;
 declare module Module {
   function destroy(obj: any): void;
+  function _malloc(size: number): number;
+  function _free(ptr: number): void;
+  const HEAP8: Int8Array;
+  const HEAP16: Int16Array;
+  const HEAP32: Int32Array;
+  const HEAPU8: Uint8Array;
+  const HEAPU16: Uint16Array;
+  const HEAPU32: Uint32Array;
+  const HEAPF32: Float32Array;
+  const HEAPF32: Float64Array;
   // ... generated from IDL
 }
 ```
