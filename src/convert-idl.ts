@@ -82,7 +82,7 @@ function convertTypedef(idl: webidl2.TypedefType) {
 
 function createIterableMethods(keyType: ts.TypeNode, valueType: ts.TypeNode, pair: boolean, async: boolean) {
   return [
-    ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), async ? '[Symbol.asyncIterator]' : '[Symbol.asyncIterator]', undefined),
+    ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), async ? '[Symbol.asyncIterator]' : '[Symbol.iterator]', undefined),
     ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'entries', undefined),
     ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'keys', undefined),
     ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'values', undefined),
