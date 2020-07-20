@@ -62,6 +62,15 @@ exports.convertIDL = convertIDL;
 function convertTypedef(idl) {
     return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, convertType(idl.idlType));
 }
+function createIterableMethods(keyType, valueType, pair, async) {
+    return [
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), async ? '[Symbol.asyncIterator]' : '[Symbol.asyncIterator]', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'entries', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'keys', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'values', undefined),
+        ts.createMethodSignature([], [ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [ts.createParameter([], [], undefined, 'value', undefined, valueType), ts.createParameter([], [], undefined, 'index', undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)), ts.createParameter([], [], undefined, 'array', undefined, ts.createArrayTypeNode(valueType))], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword))), ts.createParameter([], [], undefined, 'thisArg', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), 'forEach', undefined),
+    ];
+}
 function convertInterface(idl, options) {
     var members = [];
     var inheritance = [];
@@ -97,7 +106,16 @@ function convertInterface(idl, options) {
                 members.push(convertMemberConst(member));
                 break;
             case 'iterable':
-                inheritance.push(ts.createExpressionWithTypeArguments(member.idlType.map(function (it) { return convertType(it); }), ts.createIdentifier("Iterable")));
+                var indexedPropertyGetter = idl.members.find(function (member) {
+                    return member.type === 'operation' &&
+                        member.special === 'getter' &&
+                        member.arguments[0].idlType.idlType === 'unsigned long';
+                });
+                if (indexedPropertyGetter || member.idlType.length === 2) {
+                    var keyType = convertType(indexedPropertyGetter ? indexedPropertyGetter.arguments[0].idlType : member.idlType[0]);
+                    var valueType = convertType(member.idlType[member.idlType.length - 1]);
+                    members.push.apply(members, createIterableMethods(keyType, valueType, member.idlType.length === 2, member.async));
+                }
                 break;
             default:
                 console.log(newUnsupportedError('Unsupported IDL member', member));
