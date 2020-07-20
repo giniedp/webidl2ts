@@ -80,7 +80,7 @@ function convertTypedef(idl: webidl2.TypedefType) {
   );
 }
 
-function createIterableMethods(keyType: ts.TypeNode, valueType: ts.TypeNode, pair: boolean, async: boolean) {
+function createIterableMethods(name: string, keyType: ts.TypeNode, valueType: ts.TypeNode, pair: boolean, async: boolean) {
   return [
     ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), async ? '[Symbol.asyncIterator]' : '[Symbol.iterator]', undefined),
     ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'entries', undefined),
@@ -90,7 +90,7 @@ function createIterableMethods(keyType: ts.TypeNode, valueType: ts.TypeNode, pai
       ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [
         ts.createParameter([], [], undefined, 'value', undefined, valueType),
         ts.createParameter([], [], undefined, pair ? 'key' : 'index', undefined, keyType),
-        ts.createParameter([], [], undefined, 'array', undefined, ts.createArrayTypeNode(valueType))
+        ts.createParameter([], [], undefined, pair ? 'iterable' : 'array', undefined, pair ? ts.createTypeReferenceNode(name, []) : ts.createArrayTypeNode(valueType))
       ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword))),
       ts.createParameter([], [], undefined, 'thisArg', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))
     ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), 'forEach', undefined),
@@ -141,7 +141,7 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         if (indexedPropertyGetter || member.idlType.length === 2) {
           const keyType = convertType(indexedPropertyGetter ? indexedPropertyGetter.arguments[0].idlType : member.idlType[0]);
           const valueType = convertType(member.idlType[member.idlType.length - 1]);
-          members.push(...createIterableMethods(keyType, valueType, member.idlType.length === 2, member.async));
+          members.push(...createIterableMethods(idl.name, keyType, valueType, member.idlType.length === 2, member.async));
         }
         break;
       default:
