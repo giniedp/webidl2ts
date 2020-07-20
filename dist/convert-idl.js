@@ -68,7 +68,14 @@ function createIterableMethods(keyType, valueType, pair, async) {
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'entries', undefined),
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'keys', undefined),
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'values', undefined),
-        ts.createMethodSignature([], [ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [ts.createParameter([], [], undefined, 'value', undefined, valueType), ts.createParameter([], [], undefined, 'index', undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)), ts.createParameter([], [], undefined, 'array', undefined, ts.createArrayTypeNode(valueType))], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword))), ts.createParameter([], [], undefined, 'thisArg', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), 'forEach', undefined),
+        ts.createMethodSignature([], [
+            ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [
+                ts.createParameter([], [], undefined, 'value', undefined, valueType),
+                ts.createParameter([], [], undefined, pair ? 'key' : 'index', undefined, keyType),
+                ts.createParameter([], [], undefined, 'array', undefined, ts.createArrayTypeNode(valueType))
+            ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword))),
+            ts.createParameter([], [], undefined, 'thisArg', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))
+        ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), 'forEach', undefined),
     ];
 }
 function convertInterface(idl, options) {
