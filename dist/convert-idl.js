@@ -66,7 +66,7 @@ function createIterableMethods(name, keyType, valueType, pair, async) {
     return [
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), async ? '[Symbol.asyncIterator]' : '[Symbol.iterator]', undefined),
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'entries', undefined),
-        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'keys', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([keyType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'keys', undefined),
         ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? "AsyncIterable" : "Iterable")), 'values', undefined),
         ts.createMethodSignature([], [
             ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [
