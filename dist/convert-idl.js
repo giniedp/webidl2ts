@@ -75,9 +75,7 @@ function convertInterface(idl, options) {
                     members.push(createAttributeGetter(member));
                     members.push(createAttributeSetter(member));
                 }
-                else {
-                    members.push(convertMemberAttribute(member));
-                }
+                members.push(convertMemberAttribute(member));
                 break;
             case 'operation':
                 if (member.name === idl.name) {

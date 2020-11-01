@@ -95,9 +95,8 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         if (options?.emscripten) {
           members.push(createAttributeGetter(member))
           members.push(createAttributeSetter(member))
-        } else {
-          members.push(convertMemberAttribute(member))
         }
+        members.push(convertMemberAttribute(member))
         break
       case 'operation':
         if (member.name === idl.name) {
