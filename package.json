@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && chmod 755 dist/cli.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "start": "yarn build && ./dist/cli.js"
   },
   "repository": {
     "type": "git",
