@@ -41,11 +41,11 @@ var https = require("https");
 var fs = require("fs");
 var jsdom_1 = require("jsdom");
 var idlSelector = [
-    "pre.idl:not(.extract):not(.example)",
-    "pre.code code.idl-code",
-    "pre:not(.extract) code.idl",
-    "#permission-registry + pre.highlight",
-].join(",");
+    'pre.idl:not(.extract):not(.example)',
+    'pre.code code.idl-code',
+    'pre:not(.extract) code.idl',
+    '#permission-registry + pre.highlight',
+].join(',');
 function fetchIDL(uri) {
     return __awaiter(this, void 0, void 0, function () {
         var result;
@@ -71,19 +71,16 @@ function fetchIDL(uri) {
 exports.fetchIDL = fetchIDL;
 function extractIDL(dom) {
     var elements = Array.from(dom.querySelectorAll(idlSelector)).filter(function (el) {
-        if (el.parentElement && el.parentElement.classList.contains("example")) {
+        if (el.parentElement && el.parentElement.classList.contains('example')) {
             return false;
         }
         var previous = el.previousElementSibling;
         if (!previous) {
             return true;
         }
-        return (!previous.classList.contains("atrisk") &&
-            !previous.textContent.includes("IDL Index"));
+        return !previous.classList.contains('atrisk') && !previous.textContent.includes('IDL Index');
     });
-    return elements
-        .map(function (element) { return trimCommonIndentation(element.textContent).trim(); })
-        .join("\n\n");
+    return elements.map(function (element) { return trimCommonIndentation(element.textContent).trim(); }).join('\n\n');
 }
 /**
  * Remove common indentation:
@@ -97,7 +94,7 @@ function extractIDL(dom) {
  * Here the textContent has 6 common preceding whitespaces that can be unindented.
  */
 function trimCommonIndentation(text) {
-    var lines = text.split("\n");
+    var lines = text.split('\n');
     if (!lines[0].trim()) {
         lines.shift();
     }
@@ -105,7 +102,7 @@ function trimCommonIndentation(text) {
         lines.pop();
     }
     var commonIndentation = Math.min.apply(Math, lines.filter(function (line) { return line.trim(); }).map(getIndentation));
-    return lines.map(function (line) { return line.slice(commonIndentation); }).join("\n");
+    return lines.map(function (line) { return line.slice(commonIndentation); }).join('\n');
 }
 /**
  * Count preceding whitespaces
@@ -114,7 +111,7 @@ function getIndentation(line) {
     var count = 0;
     for (var _i = 0, line_1 = line; _i < line_1.length; _i++) {
         var ch = line_1[_i];
-        if (ch !== " ") {
+        if (ch !== ' ') {
             break;
         }
         count++;
@@ -125,10 +122,10 @@ function getUrl(url) {
     return new Promise(function (resolve, reject) {
         https
             .get(url, function (resp) {
-            var data = "";
-            resp.on("data", function (chunk) { return (data += chunk); });
-            resp.on("end", function () { return resolve(data); });
+            var data = '';
+            resp.on('data', function (chunk) { return (data += chunk); });
+            resp.on('end', function () { return resolve(data); });
         })
-            .on("error", reject);
+            .on('error', reject);
     });
 }

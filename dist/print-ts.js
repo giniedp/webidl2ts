@@ -11,7 +11,7 @@ exports.printEmscriptenModule = exports.printTs = void 0;
 var ts = require("typescript");
 function printTs(nodes) {
     var file = ts.createSourceFile("index.d.ts", '', ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
-    var printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed, });
+    var printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
     return nodes.map(function (it) { return printer.printNode(ts.EmitHint.Unspecified, it, file); }).join('\n');
 }
 exports.printTs = printTs;
@@ -34,8 +34,12 @@ function printEmscriptenModule(moduleName, nodes, defaultExport) {
     /* asteriskToken  */ undefined, 
     /* name           */ moduleName, 
     /* typeParameters */ [ts.createTypeParameterDeclaration('T')], 
-    /* parameters     */ [ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', []))], 
-    /* type           */ ts.createTypeReferenceNode('Promise', [ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))])]), 
+    /* parameters     */ [
+        ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', [])),
+    ], 
+    /* type           */ ts.createTypeReferenceNode('Promise', [
+        ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))]),
+    ]), 
     /* body           */ undefined));
     // adds module declaration with all types
     //    export declare module Module {
@@ -66,11 +70,15 @@ function emscriptenAdditions() {
     // adds malloc function
     //
     //     function _malloc(size: number): number;
-    result.push(ts.createFunctionDeclaration(undefined, undefined, undefined, ts.createIdentifier("_malloc"), undefined, [ts.createParameter(undefined, undefined, undefined, ts.createIdentifier("size"), undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined)], ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined));
+    result.push(ts.createFunctionDeclaration(undefined, undefined, undefined, ts.createIdentifier('_malloc'), undefined, [
+        ts.createParameter(undefined, undefined, undefined, ts.createIdentifier('size'), undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined),
+    ], ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined));
     // adds free function
     //
     //     function _free(size: number): number;
-    result.push(ts.createFunctionDeclaration(undefined, undefined, undefined, ts.createIdentifier("_free"), undefined, [ts.createParameter(undefined, undefined, undefined, ts.createIdentifier("ptr"), undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined)], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), undefined));
+    result.push(ts.createFunctionDeclaration(undefined, undefined, undefined, ts.createIdentifier('_free'), undefined, [
+        ts.createParameter(undefined, undefined, undefined, ts.createIdentifier('ptr'), undefined, ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), undefined),
+    ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), undefined));
     // adds HEAP* properties
     var heaps = [
         ['HEAP8', Int8Array.name],
@@ -84,7 +92,9 @@ function emscriptenAdditions() {
     ];
     for (var _i = 0, heaps_1 = heaps; _i < heaps_1.length; _i++) {
         var _a = heaps_1[_i], name_1 = _a[0], type = _a[1];
-        result.push(ts.createVariableStatement(undefined, ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createIdentifier(name_1), ts.createTypeReferenceNode(ts.createIdentifier(type), undefined), undefined)], ts.NodeFlags.Const)));
+        result.push(ts.createVariableStatement(undefined, ts.createVariableDeclarationList([
+            ts.createVariableDeclaration(ts.createIdentifier(name_1), ts.createTypeReferenceNode(ts.createIdentifier(type), undefined), undefined),
+        ], ts.NodeFlags.Const)));
     }
     return result;
 }
