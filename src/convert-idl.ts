@@ -1,25 +1,38 @@
-import * as webidl2 from 'webidl2';
-import * as ts from 'typescript';
-import { Options } from './types';
+import * as webidl2 from 'webidl2'
+import * as ts from 'typescript'
+import { Options } from './types'
 
-const bufferSourceTypes = ["ArrayBuffer", "ArrayBufferView", "DataView", "Int8Array", "Uint8Array", "Int16Array", "Uint16Array", "Uint8ClampedArray", "Int32Array", "Uint32Array", "Float32Array", "Float64Array"];
-const integerTypes = ["byte", "octet", "short", "unsigned short", "long", "unsigned long", "long long", "unsigned long long"];
-const stringTypes = ["ByteString", "DOMString", "USVString", "CSSOMString"];
-const floatTypes = ["float", "unrestricted float", "double", "unrestricted double"];
-const sameTypes = ["any", "boolean", "Date", "Function", "Promise", "void"];
+const bufferSourceTypes = [
+  'ArrayBuffer',
+  'ArrayBufferView',
+  'DataView',
+  'Int8Array',
+  'Uint8Array',
+  'Int16Array',
+  'Uint16Array',
+  'Uint8ClampedArray',
+  'Int32Array',
+  'Uint32Array',
+  'Float32Array',
+  'Float64Array',
+]
+const integerTypes = ['byte', 'octet', 'short', 'unsigned short', 'long', 'unsigned long', 'long long', 'unsigned long long']
+const stringTypes = ['ByteString', 'DOMString', 'USVString', 'CSSOMString']
+const floatTypes = ['float', 'unrestricted float', 'double', 'unrestricted double']
+const sameTypes = ['any', 'boolean', 'Date', 'Function', 'Promise', 'void']
 const baseTypeConversionMap = new Map<string, string>([
-  ...[...bufferSourceTypes].map(type => [type, type] as [string, string]),
-  ...[...integerTypes].map(type => [type, "number"] as [string, string]),
-  ...[...floatTypes].map(type => [type, "number"] as [string, string]),
-  ...[...stringTypes].map(type => [type, "string"] as [string, string]),
-  ...[...sameTypes].map(type => [type, type] as [string, string]),
-  ["object", "any"],
-  ["sequence", "Array"],
-  ["record", "Record"],
-  ["FrozenArray", "ReadonlyArray"],
-  ["EventHandler", "EventHandler"],
-  ["VoidPtr", "unknown"]
-]);
+  ...[...bufferSourceTypes].map((type) => [type, type] as [string, string]),
+  ...[...integerTypes].map((type) => [type, 'number'] as [string, string]),
+  ...[...floatTypes].map((type) => [type, 'number'] as [string, string]),
+  ...[...stringTypes].map((type) => [type, 'string'] as [string, string]),
+  ...[...sameTypes].map((type) => [type, type] as [string, string]),
+  ['object', 'any'],
+  ['sequence', 'Array'],
+  ['record', 'Record'],
+  ['FrozenArray', 'ReadonlyArray'],
+  ['EventHandler', 'EventHandler'],
+  ['VoidPtr', 'unknown'],
+])
 
 export function convertIDL(rootTypes: webidl2.IDLRootType[], options?: Options): ts.Statement[] {
   const nodes: ts.Statement[] = [];
@@ -35,18 +48,17 @@ export function convertIDL(rootTypes: webidl2.IDLRootType[], options?: Options):
               ts.createVariableStatement(
                 [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
                 ts.createVariableDeclarationList(
-                  [ts.createVariableDeclaration(
-                    ts.createIdentifier(rootType.name),
-                    ts.createTypeReferenceNode(
+                  [
+                    ts.createVariableDeclaration(
                       ts.createIdentifier(rootType.name),
-                      undefined
+                      ts.createTypeReferenceNode(ts.createIdentifier(rootType.name), undefined),
+                      undefined,
                     ),
-                    undefined
-                  )],
-                  undefined
-                )
-              )
-            );
+                  ],
+                  undefined,
+                ),
+              ),
+            )
           }
         }
         break;
@@ -71,13 +83,7 @@ export function convertIDL(rootTypes: webidl2.IDLRootType[], options?: Options):
 }
 
 function convertTypedef(idl: webidl2.TypedefType) {
-  return ts.createTypeAliasDeclaration(
-    undefined,
-    undefined,
-    ts.createIdentifier(idl.name),
-    undefined,
-    convertType(idl.idlType)
-  );
+  return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, convertType(idl.idlType))
 }
 
 function createIterableMethods(name: string, keyType: ts.TypeNode, valueType: ts.TypeNode, pair: boolean, async: boolean) {
@@ -101,21 +107,18 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
   const members: ts.TypeElement[] = [];
   const inheritance = [];
   if ('inheritance' in idl && idl.inheritance) {
-    inheritance.push(
-      ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.inheritance)),
-    );
+    inheritance.push(ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.inheritance)))
   }
 
   idl.members.forEach((member: webidl2.IDLInterfaceMemberType | webidl2.FieldType) => {
     switch (member.type) {
       case 'attribute':
         if (options?.emscripten) {
-          members.push(createAttributeGetter(member));
-          members.push(createAttributeSetter(member));
-        } else {
-          members.push(convertMemberAttribute(member));
+          members.push(createAttributeGetter(member))
+          members.push(createAttributeSetter(member))
         }
-        break;
+        members.push(convertMemberAttribute(member))
+        break
       case 'operation':
         if (member.name === idl.name) {
           members.push(convertMemberConstructor(member, options));
@@ -157,8 +160,8 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
       ts.createIdentifier(idl.name),
       undefined,
       !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)],
-      members as any
-    );
+      members as any, // TODO:
+    )
   }
 
   return ts.createInterfaceDeclaration(
@@ -167,10 +170,9 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
     ts.createIdentifier(idl.name),
     undefined,
     !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)],
-    members
-  );
+    members,
+  )
 }
-
 
 function convertInterfaceIncludes(idl: webidl2.IncludesType) {
   return ts.createInterfaceDeclaration(
@@ -178,9 +180,13 @@ function convertInterfaceIncludes(idl: webidl2.IncludesType) {
     [],
     ts.createIdentifier(idl.target),
     undefined,
-    [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.includes))])],
-    []
-  );
+    [
+      ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
+        ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.includes)),
+      ]),
+    ],
+    [],
+  )
 }
 
 function createAttributeGetter(value: webidl2.AttributeMemberType) {
@@ -206,14 +212,8 @@ function convertMemberConstructor(idl: webidl2.ConstructorMemberType | webidl2.O
 }
 
 function convertMemberField(idl: webidl2.FieldType) {
-  const optional = !idl.required ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;
-  return ts.createPropertySignature(
-    undefined,
-    ts.createIdentifier(idl.name),
-    optional,
-    convertType(idl.idlType),
-    undefined
-  );
+  const optional = !idl.required ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined
+  return ts.createPropertySignature(undefined, ts.createIdentifier(idl.name), optional, convertType(idl.idlType), undefined)
 }
 
 function convertMemberConst(idl: webidl2.ConstantMemberType) {
@@ -222,20 +222,18 @@ function convertMemberConst(idl: webidl2.ConstantMemberType) {
     ts.createIdentifier(idl.name),
     undefined,
     convertType(idl.idlType),
-    undefined
-  );
+    undefined,
+  )
 }
 
 function convertMemberAttribute(idl: webidl2.AttributeMemberType) {
   return ts.createPropertySignature(
-    [
-      idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null,
-    ].filter((it) => it != null),
+    [idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter((it) => it != null),
     ts.createIdentifier(idl.name),
     undefined,
     convertType(idl.idlType),
-    undefined
-  );
+    undefined,
+  )
 }
 
 function convertArgument(idl: webidl2.Argument) {
@@ -258,11 +256,8 @@ function convertType(idl: webidl2.IDLTypeDescription): ts.TypeNode {
     }
   }
   if (idl.generic) {
-    const type = baseTypeConversionMap.get(idl.generic) || idl.generic;
-    return ts.createTypeReferenceNode(
-      ts.createIdentifier(type),
-      idl.idlType.map(convertType)
-    );
+    const type = baseTypeConversionMap.get(idl.generic) || idl.generic
+    return ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType))
   }
   if (idl.union) {
     return ts.createUnionTypeNode(idl.idlType.map(convertType));
@@ -278,10 +273,8 @@ function convertEnum(idl: webidl2.EnumType) {
     undefined,
     ts.createIdentifier(idl.name),
     undefined,
-    ts.createUnionTypeNode(
-      idl.values.map(it => ts.createLiteralTypeNode(ts.createStringLiteral(it.value)))
-    )
-  );
+    ts.createUnionTypeNode(idl.values.map((it) => ts.createLiteralTypeNode(ts.createStringLiteral(it.value)))),
+  )
 }
 
 function convertCallback(idl: webidl2.CallbackType) {
@@ -290,15 +283,11 @@ function convertCallback(idl: webidl2.CallbackType) {
     undefined,
     ts.createIdentifier(idl.name),
     undefined,
-    ts.createFunctionTypeNode(
-      undefined,
-      idl.arguments.map(convertArgument),
-      convertType(idl.idlType),
-    )
-  );
+    ts.createFunctionTypeNode(undefined, idl.arguments.map(convertArgument), convertType(idl.idlType)),
+  )
 }
 
-function newUnsupportedError(message: string, idl: any) {
+function newUnsupportedError(message: string, idl: unknown) {
   return new Error(`
   ${message}
   ${JSON.stringify(idl, null, 2)}

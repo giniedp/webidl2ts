@@ -26,12 +26,12 @@ async function main() {
     .option('i', {
       describe: 'Input file or url',
       alias: 'in',
-      demand: true
+      demand: true,
     })
     .option('o', {
       describe: 'Output file path',
       alias: 'out',
-      demand: true
+      demand: true,
     })
     .option('e', {
       describe: 'Enable Emscripten mode',
@@ -42,22 +42,21 @@ async function main() {
     .option('n', {
       describe: 'Name of the module (emscripten mode)',
       alias: 'name',
-      default: 'Module'
+      default: 'Module',
     })
     .option('d', {
       describe: 'Write default export (emscripten mode)',
       alias: 'default-export',
       default: false,
-      boolean: true
-    })
-    .argv
+      boolean: true,
+    }).argv
 
   const options: Options = {
     input: argv.i as string,
     output: argv.o as string,
     emscripten: argv.e,
     defaultExport: argv.d,
-    module: argv.n
+    module: argv.n,
   }
 
   if (!options.input) {
@@ -68,7 +67,7 @@ async function main() {
 }
 
 async function convert(options: Options) {
-  const idlString = await fetchIDL(options.input);
+  const idlString = await fetchIDL(options.input)
   const idl = await parseIDL(idlString, {
     preprocess: (idl: string) => {
       if (options.emscripten) {
@@ -76,7 +75,7 @@ async function convert(options: Options) {
         idl = fixes.array(idl)
       }
       return idl
-    }
+    },
   })
   const ts = convertIDL(idl, options)
 
@@ -87,7 +86,7 @@ async function convert(options: Options) {
     tsString = printTs(ts)
   }
 
-  fs.writeFileSync(options.output, tsString);
+  fs.writeFileSync(options.output, tsString)
 }
 
 main()

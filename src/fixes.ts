@@ -1,5 +1,5 @@
 export const fixes = {
-  'inheritance': (idlString: string): string => {
+  inheritance: (idlString: string): string => {
     // need fix for error:
     //
     //      WebIDLParseError: Syntax error at line 49, since `interface btVector4`:
@@ -26,12 +26,12 @@ export const fixes = {
       return `// ${line}`
     })
     inheritance.forEach(({ left, right }) => {
-      idlString = idlString.replace(new RegExp(`interface ${left} \{`), `interface ${left}: ${right} {`)
+      idlString = idlString.replace(new RegExp(`interface ${left} {`), `interface ${left}: ${right} {`)
     })
     return idlString
   },
 
-  'array': (idlString: string): string => {
+  array: (idlString: string): string => {
     // need fix for error:
     //
     //      WebIDLParseError: Syntax error at line 102, since `interface btTransform`:
@@ -47,4 +47,3 @@ export const fixes = {
       .replace(/long\[\]/gi, 'FrozenArray<long>')
   },
 }
-
