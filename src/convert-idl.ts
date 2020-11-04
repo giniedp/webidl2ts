@@ -86,6 +86,84 @@ function convertTypedef(idl: webidl2.TypedefType) {
   return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, convertType(idl.idlType))
 }
 
+function createIterableMethods(name: string, keyType: ts.TypeNode, valueType: ts.TypeNode, pair: boolean, async: boolean) {
+  return [
+    ts.createMethodSignature(
+      [],
+      [],
+      ts.createExpressionWithTypeArguments(
+        pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType],
+        ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator'),
+      ),
+      async ? '[Symbol.asyncIterator]' : '[Symbol.iterator]',
+      undefined,
+    ),
+    ts.createMethodSignature(
+      [],
+      [],
+      ts.createExpressionWithTypeArguments(
+        [ts.createTupleTypeNode([keyType, valueType])],
+        ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator'),
+      ),
+      'entries',
+      undefined,
+    ),
+    ts.createMethodSignature(
+      [],
+      [],
+      ts.createExpressionWithTypeArguments([keyType], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')),
+      'keys',
+      undefined,
+    ),
+    ts.createMethodSignature(
+      [],
+      [],
+      ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')),
+      'values',
+      undefined,
+    ),
+    ts.createMethodSignature(
+      [],
+      [
+        ts.createParameter(
+          [],
+          [],
+          undefined,
+          'callbackfn',
+          undefined,
+          ts.createFunctionTypeNode(
+            [],
+            [
+              ts.createParameter([], [], undefined, 'value', undefined, valueType),
+              ts.createParameter([], [], undefined, pair ? 'key' : 'index', undefined, keyType),
+              ts.createParameter(
+                [],
+                [],
+                undefined,
+                pair ? 'iterable' : 'array',
+                undefined,
+                pair ? ts.createTypeReferenceNode(name, []) : ts.createArrayTypeNode(valueType),
+              ),
+            ],
+            ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+          ),
+        ),
+        ts.createParameter(
+          [],
+          [],
+          undefined,
+          'thisArg',
+          ts.createToken(ts.SyntaxKind.QuestionToken),
+          ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
+        ),
+      ],
+      ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+      'forEach',
+      undefined,
+    ),
+  ]
+}
+
 function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | webidl2.InterfaceMixinType, options?: Options) {
   const members: ts.TypeElement[] = []
   const inheritance = []
@@ -118,14 +196,20 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
       case 'const':
         members.push(convertMemberConst(member))
         break
-      case 'iterable':
-        inheritance.push(
-          ts.createExpressionWithTypeArguments(
-            member.idlType.map((it) => convertType(it)),
-            ts.createIdentifier('Iterable'),
-          ),
+      case 'iterable': {
+        type Members = Array<webidl2.IDLInterfaceMemberType | webidl2.FieldType | webidl2.IDLInterfaceMixinMemberType>
+        const indexedPropertyGetter = (idl.members as Members).find(
+          (member): member is webidl2.OperationMemberType =>
+            member.type === 'operation' && member.special === 'getter' && member.arguments[0].idlType.idlType === 'unsigned long',
         )
+
+        if ((indexedPropertyGetter && member.idlType.length === 1) || member.idlType.length === 2) {
+          const keyType = convertType(indexedPropertyGetter ? indexedPropertyGetter.arguments[0].idlType : member.idlType[0])
+          const valueType = convertType(member.idlType[member.idlType.length - 1])
+          members.push(...createIterableMethods(idl.name, keyType, valueType, member.idlType.length === 2, member.async))
+        }
         break
+      }
       default:
         console.log(newUnsupportedError('Unsupported IDL member', member))
         break

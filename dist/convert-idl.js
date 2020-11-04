@@ -9,18 +9,31 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertIDL = void 0;
 var ts = require("typescript");
-var bufferSourceTypes = ["ArrayBuffer", "ArrayBufferView", "DataView", "Int8Array", "Uint8Array", "Int16Array", "Uint16Array", "Uint8ClampedArray", "Int32Array", "Uint32Array", "Float32Array", "Float64Array"];
-var integerTypes = ["byte", "octet", "short", "unsigned short", "long", "unsigned long", "long long", "unsigned long long"];
-var stringTypes = ["ByteString", "DOMString", "USVString", "CSSOMString"];
-var floatTypes = ["float", "unrestricted float", "double", "unrestricted double"];
-var sameTypes = ["any", "boolean", "Date", "Function", "Promise", "void"];
-var baseTypeConversionMap = new Map(__spreadArrays(__spreadArrays(bufferSourceTypes).map(function (type) { return [type, type]; }), __spreadArrays(integerTypes).map(function (type) { return [type, "number"]; }), __spreadArrays(floatTypes).map(function (type) { return [type, "number"]; }), __spreadArrays(stringTypes).map(function (type) { return [type, "string"]; }), __spreadArrays(sameTypes).map(function (type) { return [type, type]; }), [
-    ["object", "any"],
-    ["sequence", "Array"],
-    ["record", "Record"],
-    ["FrozenArray", "ReadonlyArray"],
-    ["EventHandler", "EventHandler"],
-    ["VoidPtr", "unknown"]
+var bufferSourceTypes = [
+    'ArrayBuffer',
+    'ArrayBufferView',
+    'DataView',
+    'Int8Array',
+    'Uint8Array',
+    'Int16Array',
+    'Uint16Array',
+    'Uint8ClampedArray',
+    'Int32Array',
+    'Uint32Array',
+    'Float32Array',
+    'Float64Array',
+];
+var integerTypes = ['byte', 'octet', 'short', 'unsigned short', 'long', 'unsigned long', 'long long', 'unsigned long long'];
+var stringTypes = ['ByteString', 'DOMString', 'USVString', 'CSSOMString'];
+var floatTypes = ['float', 'unrestricted float', 'double', 'unrestricted double'];
+var sameTypes = ['any', 'boolean', 'Date', 'Function', 'Promise', 'void'];
+var baseTypeConversionMap = new Map(__spreadArrays(__spreadArrays(bufferSourceTypes).map(function (type) { return [type, type]; }), __spreadArrays(integerTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(floatTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(stringTypes).map(function (type) { return [type, 'string']; }), __spreadArrays(sameTypes).map(function (type) { return [type, type]; }), [
+    ['object', 'any'],
+    ['sequence', 'Array'],
+    ['record', 'Record'],
+    ['FrozenArray', 'ReadonlyArray'],
+    ['EventHandler', 'EventHandler'],
+    ['VoidPtr', 'unknown'],
 ]));
 function convertIDL(rootTypes, options) {
     var _a;
@@ -35,7 +48,9 @@ function convertIDL(rootTypes, options) {
                 for (var _b = 0, _c = rootType.extAttrs; _b < _c.length; _b++) {
                     var attr = _c[_b];
                     if (attr.name === 'Exposed' && ((_a = attr.rhs) === null || _a === void 0 ? void 0 : _a.value) === 'Window') {
-                        nodes.push(ts.createVariableStatement([ts.createModifier(ts.SyntaxKind.DeclareKeyword)], ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createIdentifier(rootType.name), ts.createTypeReferenceNode(ts.createIdentifier(rootType.name), undefined), undefined)], undefined)));
+                        nodes.push(ts.createVariableStatement([ts.createModifier(ts.SyntaxKind.DeclareKeyword)], ts.createVariableDeclarationList([
+                            ts.createVariableDeclaration(ts.createIdentifier(rootType.name), ts.createTypeReferenceNode(ts.createIdentifier(rootType.name), undefined), undefined),
+                        ], undefined)));
                     }
                 }
                 break;
@@ -61,6 +76,22 @@ function convertIDL(rootTypes, options) {
 exports.convertIDL = convertIDL;
 function convertTypedef(idl) {
     return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, convertType(idl.idlType));
+}
+function createIterableMethods(name, keyType, valueType, pair, async) {
+    return [
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments(pair ? [ts.createTupleTypeNode([keyType, valueType])] : [valueType], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')), async ? '[Symbol.asyncIterator]' : '[Symbol.iterator]', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([ts.createTupleTypeNode([keyType, valueType])], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')), 'entries', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([keyType], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')), 'keys', undefined),
+        ts.createMethodSignature([], [], ts.createExpressionWithTypeArguments([valueType], ts.createIdentifier(async ? 'AsyncIterableIterator' : 'IterableIterator')), 'values', undefined),
+        ts.createMethodSignature([], [
+            ts.createParameter([], [], undefined, 'callbackfn', undefined, ts.createFunctionTypeNode([], [
+                ts.createParameter([], [], undefined, 'value', undefined, valueType),
+                ts.createParameter([], [], undefined, pair ? 'key' : 'index', undefined, keyType),
+                ts.createParameter([], [], undefined, pair ? 'iterable' : 'array', undefined, pair ? ts.createTypeReferenceNode(name, []) : ts.createArrayTypeNode(valueType)),
+            ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword))),
+            ts.createParameter([], [], undefined, 'thisArg', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)),
+        ], ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword), 'forEach', undefined),
+    ];
 }
 function convertInterface(idl, options) {
     var members = [];
@@ -94,9 +125,17 @@ function convertInterface(idl, options) {
             case 'const':
                 members.push(convertMemberConst(member));
                 break;
-            case 'iterable':
-                inheritance.push(ts.createExpressionWithTypeArguments(member.idlType.map(function (it) { return convertType(it); }), ts.createIdentifier("Iterable")));
+            case 'iterable': {
+                var indexedPropertyGetter = idl.members.find(function (member) {
+                    return member.type === 'operation' && member.special === 'getter' && member.arguments[0].idlType.idlType === 'unsigned long';
+                });
+                if ((indexedPropertyGetter && member.idlType.length === 1) || member.idlType.length === 2) {
+                    var keyType = convertType(indexedPropertyGetter ? indexedPropertyGetter.arguments[0].idlType : member.idlType[0]);
+                    var valueType = convertType(member.idlType[member.idlType.length - 1]);
+                    members.push.apply(members, createIterableMethods(idl.name, keyType, valueType, member.idlType.length === 2, member.async));
+                }
                 break;
+            }
             default:
                 console.log(newUnsupportedError('Unsupported IDL member', member));
                 break;
@@ -108,7 +147,11 @@ function convertInterface(idl, options) {
     return ts.createInterfaceDeclaration(undefined, [], ts.createIdentifier(idl.name), undefined, !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)], members);
 }
 function convertInterfaceIncludes(idl) {
-    return ts.createInterfaceDeclaration(undefined, [], ts.createIdentifier(idl.target), undefined, [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.includes))])], []);
+    return ts.createInterfaceDeclaration(undefined, [], ts.createIdentifier(idl.target), undefined, [
+        ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
+            ts.createExpressionWithTypeArguments(undefined, ts.createIdentifier(idl.includes)),
+        ]),
+    ], []);
 }
 function createAttributeGetter(value) {
     return ts.createMethodSignature([], [], convertType(value.idlType), 'get_' + value.name, undefined);
@@ -136,9 +179,7 @@ function convertMemberConst(idl) {
     return ts.createPropertySignature([ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)], ts.createIdentifier(idl.name), undefined, convertType(idl.idlType), undefined);
 }
 function convertMemberAttribute(idl) {
-    return ts.createPropertySignature([
-        idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null,
-    ].filter(function (it) { return it != null; }), ts.createIdentifier(idl.name), undefined, convertType(idl.idlType), undefined);
+    return ts.createPropertySignature([idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter(function (it) { return it != null; }), ts.createIdentifier(idl.name), undefined, convertType(idl.idlType), undefined);
 }
 function convertArgument(idl) {
     var optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;

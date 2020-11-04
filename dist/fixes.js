@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fixes = void 0;
 exports.fixes = {
-    'inheritance': function (idlString) {
+    inheritance: function (idlString) {
         // need fix for error:
         //
         //      WebIDLParseError: Syntax error at line 49, since `interface btVector4`:
@@ -34,7 +34,7 @@ exports.fixes = {
         });
         return idlString;
     },
-    'array': function (idlString) {
+    array: function (idlString) {
         // need fix for error:
         //
         //      WebIDLParseError: Syntax error at line 102, since `interface btTransform`:
