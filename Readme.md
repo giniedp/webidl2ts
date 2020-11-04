@@ -34,16 +34,19 @@ Options:
 ## Definitions for browser libs
 
 Generate type definitions from a local idl file:
+
 ```
 webidl2ts -i my.idl -o index.d.ts
 ```
 
 Use remote IDL files:
+
 ```
 webidl2ts -i https://www.khronos.org/registry/webgl/specs/latest/2.0/webgl2.idl -o webgl.d.ts
 ```
 
 Generate type definitions from online documentation:
+
 ```
 webidl2ts -i https://www.w3.org/TR/webxr/ -o webxr.d.ts
 ```
@@ -65,7 +68,7 @@ This is an excerpt of a `package.json` with scripts to generate type definitions
   "scripts": {
     "generate": "yarn generate:module && yarn generate:ambient",
     "generate:module": "webidl2ts -i ./ammo.idl -n Ammo -ed -o ./builds/ammo.d.ts",
-    "generate:ambient": "webidl2ts -i ./ammo.idl -n Ammo  -e -o ./builds/ammo-ambient.d.ts",
+    "generate:ambient": "webidl2ts -i ./ammo.idl -n Ammo  -e -o ./builds/ammo-ambient.d.ts"
   },
   "devDependencies": {
     "webidl2ts": "github:giniedp/webidl2ts"
@@ -104,34 +107,35 @@ Please file an issue if you need further adjustments
 
 Some types are generated differently
 
-|| `-e=true` | `-e=false` |
-|---|---|---|
-|interfaces| generated as classes | generated as interfaces and declared vars |
-|attributes| generated with `get_` and `set_` prefix | generated as properties |
+|            | `-e=true`                               | `-e=false`                                |
+| ---------- | --------------------------------------- | ----------------------------------------- |
+| interfaces | generated as classes                    | generated as interfaces and declared vars |
+| attributes | generated with `get_` and `set_` prefix | generated as properties                   |
 
 The generated d.ts output includes the following Module definition with `-e` enabled
 
 ```ts
-declare function Module<T>(target?: T): Promise<T & typeof Module>;
+declare function Module<T>(target?: T): Promise<T & typeof Module>
 declare module Module {
-  function destroy(obj: any): void;
-  function _malloc(size: number): number;
-  function _free(ptr: number): void;
-  const HEAP8: Int8Array;
-  const HEAP16: Int16Array;
-  const HEAP32: Int32Array;
-  const HEAPU8: Uint8Array;
-  const HEAPU16: Uint16Array;
-  const HEAPU32: Uint32Array;
-  const HEAPF32: Float32Array;
-  const HEAPF32: Float64Array;
+  function destroy(obj: any): void
+  function _malloc(size: number): number
+  function _free(ptr: number): void
+  const HEAP8: Int8Array
+  const HEAP16: Int16Array
+  const HEAP32: Int32Array
+  const HEAPU8: Uint8Array
+  const HEAPU16: Uint16Array
+  const HEAPU32: Uint32Array
+  const HEAPF32: Float32Array
+  const HEAPF32: Float64Array
   // ... generated from IDL
 }
 ```
 
 The `-d` option adds a default export
+
 ```ts
-export default Module;
+export default Module
 ```
 
 # References
