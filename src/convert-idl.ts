@@ -211,15 +211,19 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         break
       }
       case 'setlike':
-        inheritance.push(ts.createExpressionWithTypeArguments(
-          [convertType(member.idlType[0])],
-          ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set'))
+        inheritance.push(
+          ts.createExpressionWithTypeArguments(
+            [convertType(member.idlType[0])],
+            ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set'),
+          ),
         )
         break
       case 'maplike':
-        inheritance.push(ts.createExpressionWithTypeArguments(
-          [convertType(member.idlType[0]), convertType(member.idlType[1])],
-          ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map'))
+        inheritance.push(
+          ts.createExpressionWithTypeArguments(
+            [convertType(member.idlType[0]), convertType(member.idlType[1])],
+            ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map'),
+          ),
         )
         break
       default:
