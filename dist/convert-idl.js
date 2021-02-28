@@ -136,11 +136,20 @@ function convertInterface(idl, options) {
                 }
                 break;
             }
+            case 'setlike':
+                inheritance.push(ts.createExpressionWithTypeArguments([convertType(member.idlType[0])], ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set')));
+                break;
+            case 'maplike':
+                inheritance.push(ts.createExpressionWithTypeArguments([convertType(member.idlType[0]), convertType(member.idlType[1])], ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map')));
+                break;
             default:
                 console.log(newUnsupportedError('Unsupported IDL member', member));
                 break;
         }
     });
+    if (inheritance.length === 1 && !members.length) {
+        return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, inheritance[0]);
+    }
     if (options === null || options === void 0 ? void 0 : options.emscripten) {
         return ts.createClassDeclaration(undefined, [], ts.createIdentifier(idl.name), undefined, !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)], members);
     }
@@ -180,6 +189,9 @@ function convertMemberConst(idl) {
 }
 function convertMemberAttribute(idl) {
     return ts.createPropertySignature([idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter(function (it) { return it != null; }), ts.createIdentifier(idl.name), undefined, convertType(idl.idlType), undefined);
+}
+function convertSetlikeMemberAttribute(idl) {
+    return ts.createPropertySignature([idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter(function (it) { return it != null; }), ts.createIdentifier('Set'), undefined, convertType(idl.idlType[0]), undefined);
 }
 function convertArgument(idl) {
     var optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;
