@@ -210,11 +210,27 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         }
         break
       }
+      case 'setlike':
+        inheritance.push(ts.createExpressionWithTypeArguments(
+          [convertType(member.idlType[0])],
+          ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set'))
+        )
+        break
+      case 'maplike':
+        inheritance.push(ts.createExpressionWithTypeArguments(
+          [convertType(member.idlType[0]), convertType(member.idlType[1])],
+          ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map'))
+        )
+        break
       default:
         console.log(newUnsupportedError('Unsupported IDL member', member))
         break
     }
   })
+
+  if (inheritance.length === 1 && !members.length) {
+    return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, inheritance[0])
+  }
 
   if (options?.emscripten) {
     return ts.createClassDeclaration(
@@ -295,6 +311,16 @@ function convertMemberAttribute(idl: webidl2.AttributeMemberType) {
     ts.createIdentifier(idl.name),
     undefined,
     convertType(idl.idlType),
+    undefined,
+  )
+}
+
+function convertSetlikeMemberAttribute(idl: webidl2.SetlikeDeclarationMemberType) {
+  return ts.createPropertySignature(
+    [idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter((it) => it != null),
+    ts.createIdentifier('Set'),
+    undefined,
+    convertType(idl.idlType[0]),
     undefined,
   )
 }
