@@ -319,16 +319,6 @@ function convertMemberAttribute(idl: webidl2.AttributeMemberType) {
   )
 }
 
-function convertSetlikeMemberAttribute(idl: webidl2.SetlikeDeclarationMemberType) {
-  return ts.createPropertySignature(
-    [idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter((it) => it != null),
-    ts.createIdentifier('Set'),
-    undefined,
-    convertType(idl.idlType[0]),
-    undefined,
-  )
-}
-
 function convertArgument(idl: webidl2.Argument) {
   const optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined
   return ts.createParameter([], [], undefined, idl.name, optional, convertType(idl.idlType))
