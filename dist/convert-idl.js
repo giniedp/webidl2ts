@@ -190,9 +190,6 @@ function convertMemberConst(idl) {
 function convertMemberAttribute(idl) {
     return ts.createPropertySignature([idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter(function (it) { return it != null; }), ts.createIdentifier(idl.name), undefined, convertType(idl.idlType), undefined);
 }
-function convertSetlikeMemberAttribute(idl) {
-    return ts.createPropertySignature([idl.readonly ? ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) : null].filter(function (it) { return it != null; }), ts.createIdentifier('Set'), undefined, convertType(idl.idlType[0]), undefined);
-}
 function convertArgument(idl) {
     var optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;
     return ts.createParameter([], [], undefined, idl.name, optional, convertType(idl.idlType));
