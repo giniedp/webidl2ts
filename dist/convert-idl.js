@@ -1,10 +1,8 @@
 "use strict";
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertIDL = void 0;
@@ -27,7 +25,7 @@ var integerTypes = ['byte', 'octet', 'short', 'unsigned short', 'long', 'unsigne
 var stringTypes = ['ByteString', 'DOMString', 'USVString', 'CSSOMString'];
 var floatTypes = ['float', 'unrestricted float', 'double', 'unrestricted double'];
 var sameTypes = ['any', 'boolean', 'Date', 'Function', 'Promise', 'void'];
-var baseTypeConversionMap = new Map(__spreadArrays(__spreadArrays(bufferSourceTypes).map(function (type) { return [type, type]; }), __spreadArrays(integerTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(floatTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(stringTypes).map(function (type) { return [type, 'string']; }), __spreadArrays(sameTypes).map(function (type) { return [type, type]; }), [
+var baseTypeConversionMap = new Map(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], __spreadArray([], bufferSourceTypes).map(function (type) { return [type, type]; })), __spreadArray([], integerTypes).map(function (type) { return [type, 'number']; })), __spreadArray([], floatTypes).map(function (type) { return [type, 'number']; })), __spreadArray([], stringTypes).map(function (type) { return [type, 'string']; })), __spreadArray([], sameTypes).map(function (type) { return [type, type]; })), [
     ['object', 'any'],
     ['sequence', 'Array'],
     ['record', 'Record'],
