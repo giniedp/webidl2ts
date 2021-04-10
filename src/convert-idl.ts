@@ -210,11 +210,31 @@ function convertInterface(idl: webidl2.InterfaceType | webidl2.DictionaryType | 
         }
         break
       }
+      case 'setlike':
+        inheritance.push(
+          ts.createExpressionWithTypeArguments(
+            [convertType(member.idlType[0])],
+            ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set'),
+          ),
+        )
+        break
+      case 'maplike':
+        inheritance.push(
+          ts.createExpressionWithTypeArguments(
+            [convertType(member.idlType[0]), convertType(member.idlType[1])],
+            ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map'),
+          ),
+        )
+        break
       default:
         console.log(newUnsupportedError('Unsupported IDL member', member))
         break
     }
   })
+
+  if (inheritance.length === 1 && !members.length) {
+    return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, inheritance[0])
+  }
 
   if (options?.emscripten) {
     return ts.createClassDeclaration(
@@ -303,24 +323,29 @@ function convertArgument(idl: webidl2.Argument) {
   const optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined
   return ts.createParameter([], [], undefined, idl.name, optional, convertType(idl.idlType))
 }
-
+function makeFinalType(type: ts.TypeNode, idl: webidl2.IDLTypeDescription): ts.TypeNode {
+  if (idl.nullable) {
+    return ts.factory.createUnionTypeNode([type, ts.factory.createNull() as unknown as ts.TypeNode])
+  }
+  return type
+}
 function convertType(idl: webidl2.IDLTypeDescription): ts.TypeNode {
   if (typeof idl.idlType === 'string') {
     const type = baseTypeConversionMap.get(idl.idlType) || idl.idlType
     switch (type) {
       case 'number':
-        return ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword)
+        return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), idl)
       case 'string':
-        return ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+        return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), idl)
       case 'void':
         return ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword)
       default:
-        return ts.createTypeReferenceNode(type, [])
+        return makeFinalType(ts.createTypeReferenceNode(type, []), idl)
     }
   }
   if (idl.generic) {
     const type = baseTypeConversionMap.get(idl.generic) || idl.generic
-    return ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType))
+    return makeFinalType(ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType)), idl)
   }
   if (idl.union) {
     return ts.createUnionTypeNode(idl.idlType.map(convertType))

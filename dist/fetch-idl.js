@@ -44,7 +44,7 @@ var idlSelector = [
     'pre.idl:not(.extract):not(.example)',
     'pre.code code.idl-code',
     'pre:not(.extract) code.idl',
-    '#permission-registry + pre.highlight',
+    '#permission-registry + pre.highlight', // Permissions
 ].join(',');
 function fetchIDL(uri) {
     return __awaiter(this, void 0, void 0, function () {

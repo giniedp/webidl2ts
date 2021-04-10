@@ -1,10 +1,8 @@
 "use strict";
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertIDL = void 0;
@@ -27,7 +25,7 @@ var integerTypes = ['byte', 'octet', 'short', 'unsigned short', 'long', 'unsigne
 var stringTypes = ['ByteString', 'DOMString', 'USVString', 'CSSOMString'];
 var floatTypes = ['float', 'unrestricted float', 'double', 'unrestricted double'];
 var sameTypes = ['any', 'boolean', 'Date', 'Function', 'Promise', 'void'];
-var baseTypeConversionMap = new Map(__spreadArrays(__spreadArrays(bufferSourceTypes).map(function (type) { return [type, type]; }), __spreadArrays(integerTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(floatTypes).map(function (type) { return [type, 'number']; }), __spreadArrays(stringTypes).map(function (type) { return [type, 'string']; }), __spreadArrays(sameTypes).map(function (type) { return [type, type]; }), [
+var baseTypeConversionMap = new Map(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], __spreadArray([], bufferSourceTypes).map(function (type) { return [type, type]; })), __spreadArray([], integerTypes).map(function (type) { return [type, 'number']; })), __spreadArray([], floatTypes).map(function (type) { return [type, 'number']; })), __spreadArray([], stringTypes).map(function (type) { return [type, 'string']; })), __spreadArray([], sameTypes).map(function (type) { return [type, type]; })), [
     ['object', 'any'],
     ['sequence', 'Array'],
     ['record', 'Record'],
@@ -136,11 +134,20 @@ function convertInterface(idl, options) {
                 }
                 break;
             }
+            case 'setlike':
+                inheritance.push(ts.createExpressionWithTypeArguments([convertType(member.idlType[0])], ts.createIdentifier(member.readonly ? 'ReadonlySet' : 'Set')));
+                break;
+            case 'maplike':
+                inheritance.push(ts.createExpressionWithTypeArguments([convertType(member.idlType[0]), convertType(member.idlType[1])], ts.createIdentifier(member.readonly ? 'ReadonlyMap' : 'Map')));
+                break;
             default:
                 console.log(newUnsupportedError('Unsupported IDL member', member));
                 break;
         }
     });
+    if (inheritance.length === 1 && !members.length) {
+        return ts.createTypeAliasDeclaration(undefined, undefined, ts.createIdentifier(idl.name), undefined, inheritance[0]);
+    }
     if (options === null || options === void 0 ? void 0 : options.emscripten) {
         return ts.createClassDeclaration(undefined, [], ts.createIdentifier(idl.name), undefined, !inheritance.length ? undefined : [ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, inheritance)], members);
     }
@@ -185,23 +192,29 @@ function convertArgument(idl) {
     var optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;
     return ts.createParameter([], [], undefined, idl.name, optional, convertType(idl.idlType));
 }
+function makeFinalType(type, idl) {
+    if (idl.nullable) {
+        return ts.factory.createUnionTypeNode([type, ts.factory.createNull()]);
+    }
+    return type;
+}
 function convertType(idl) {
     if (typeof idl.idlType === 'string') {
         var type = baseTypeConversionMap.get(idl.idlType) || idl.idlType;
         switch (type) {
             case 'number':
-                return ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
+                return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), idl);
             case 'string':
-                return ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+                return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), idl);
             case 'void':
                 return ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
             default:
-                return ts.createTypeReferenceNode(type, []);
+                return makeFinalType(ts.createTypeReferenceNode(type, []), idl);
         }
     }
     if (idl.generic) {
         var type = baseTypeConversionMap.get(idl.generic) || idl.generic;
-        return ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType));
+        return makeFinalType(ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType)), idl);
     }
     if (idl.union) {
         return ts.createUnionTypeNode(idl.idlType.map(convertType));
