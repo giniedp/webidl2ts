@@ -192,23 +192,29 @@ function convertArgument(idl) {
     var optional = idl.optional ? ts.createToken(ts.SyntaxKind.QuestionToken) : undefined;
     return ts.createParameter([], [], undefined, idl.name, optional, convertType(idl.idlType));
 }
+function makeFinalType(type, idl) {
+    if (idl.nullable) {
+        return ts.factory.createUnionTypeNode([type, ts.factory.createNull()]);
+    }
+    return type;
+}
 function convertType(idl) {
     if (typeof idl.idlType === 'string') {
         var type = baseTypeConversionMap.get(idl.idlType) || idl.idlType;
         switch (type) {
             case 'number':
-                return ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
+                return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword), idl);
             case 'string':
-                return ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+                return makeFinalType(ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword), idl);
             case 'void':
                 return ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
             default:
-                return ts.createTypeReferenceNode(type, []);
+                return makeFinalType(ts.createTypeReferenceNode(type, []), idl);
         }
     }
     if (idl.generic) {
         var type = baseTypeConversionMap.get(idl.generic) || idl.generic;
-        return ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType));
+        return makeFinalType(ts.createTypeReferenceNode(ts.createIdentifier(type), idl.idlType.map(convertType)), idl);
     }
     if (idl.union) {
         return ts.createUnionTypeNode(idl.idlType.map(convertType));
