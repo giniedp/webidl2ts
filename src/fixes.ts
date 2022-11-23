@@ -40,10 +40,17 @@ export const fixes = {
     //
     // current solution: use sequence<float> type
     return idlString
-      .replace(/attribute (\w+)\[\]/gi, (match, group) => {
+      .replace(/attribute unsigned (\w+)\[\]/gi, (_, group) => {
+        return `attribute FrozenArray<unsigned ${group}>`
+      })
+      .replace(/attribute (\w+)\[\]/gi, (_, group) => {
         return `attribute FrozenArray<${group}>`
       })
-      .replace(/float\[\]/gi, 'FrozenArray<float>')
-      .replace(/long\[\]/gi, 'FrozenArray<long>')
+      .replace(/unsigned (\w+)\[\]/gi, (_, group) => {
+        return `FrozenArray<unsigned ${group}>`
+      })
+      .replace(/(\w+)\[\]/gi, (_, group) => {
+        return `FrozenArray<${group}>`
+      })
   },
 }

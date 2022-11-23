@@ -43,10 +43,17 @@ exports.fixes = {
         //
         // current solution: use sequence<float> type
         return idlString
-            .replace(/attribute (\w+)\[\]/gi, function (match, group) {
+            .replace(/attribute unsigned (\w+)\[\]/gi, function (_, group) {
+            return "attribute FrozenArray<unsigned " + group + ">";
+        })
+            .replace(/attribute (\w+)\[\]/gi, function (_, group) {
             return "attribute FrozenArray<" + group + ">";
         })
-            .replace(/float\[\]/gi, 'FrozenArray<float>')
-            .replace(/long\[\]/gi, 'FrozenArray<long>');
+            .replace(/unsigned (\w+)\[\]/gi, function (_, group) {
+            return "FrozenArray<unsigned " + group + ">";
+        })
+            .replace(/(\w+)\[\]/gi, function (_, group) {
+            return "FrozenArray<" + group + ">";
+        });
     },
 };
