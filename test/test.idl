@@ -1,0 +1,4 @@
+interface Test {
+  long add(long a, long b);
+  long remove(long a, long b);
+};
