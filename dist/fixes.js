@@ -26,11 +26,11 @@ exports.fixes = {
         var inheritance = [];
         idlString = idlString.replace(/([a-zA-Z0-9]+) implements ([a-zA-Z0-9]+);/gi, function (line, left, right) {
             inheritance.push({ left: left, right: right });
-            return "// " + line;
+            return "// ".concat(line);
         });
         inheritance.forEach(function (_a) {
             var left = _a.left, right = _a.right;
-            idlString = idlString.replace(new RegExp("interface " + left + " {"), "interface " + left + ": " + right + " {");
+            idlString = idlString.replace(new RegExp("interface ".concat(left, " {")), "interface ".concat(left, ": ").concat(right, " {"));
         });
         return idlString;
     },
@@ -44,7 +44,7 @@ exports.fixes = {
         // current solution: use sequence<float> type
         return idlString
             .replace(/attribute (\w+)\[\]/gi, function (match, group) {
-            return "attribute FrozenArray<" + group + ">";
+            return "attribute FrozenArray<".concat(group, ">");
         })
             .replace(/float\[\]/gi, 'FrozenArray<float>')
             .replace(/long\[\]/gi, 'FrozenArray<long>');

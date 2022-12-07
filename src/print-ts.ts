@@ -12,11 +12,10 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
     // adds default export
     //    export default Module;
     result.push(
-      ts.createExportAssignment(
-        /* decorators     */ [],
-        /* modifiers      */ [ts.createModifier(ts.SyntaxKind.DefaultKeyword)],
+      ts.factory.createExportAssignment(
+        /* modifiers      */ [ts.factory.createModifier(ts.SyntaxKind.DefaultKeyword)],
         /* isExportEquals */ false,
-        /* expression     */ ts.createIdentifier(moduleName),
+        /* expression     */ ts.factory.createIdentifier(moduleName),
       ),
     )
   }
@@ -24,17 +23,25 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
   // adds module function
   //    declare function Module<T>(target?: T): Promise<T & typeof Module>;
   result.push(
-    ts.createFunctionDeclaration(
-      /* decorators     */ [],
-      /* modifiers      */ [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+    ts.factory.createFunctionDeclaration(
+      /* modifiers      */ [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)],
       /* asteriskToken  */ undefined,
       /* name           */ moduleName,
-      /* typeParameters */ [ts.createTypeParameterDeclaration('T')],
+      /* typeParameters */ [ts.factory.createTypeParameterDeclaration(undefined, 'T')],
       /* parameters     */ [
-        ts.createParameter([], [], undefined, 'target', ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode('T', [])),
+        ts.factory.createParameterDeclaration(
+          [],
+          undefined,
+          'target',
+          ts.factory.createToken(ts.SyntaxKind.QuestionToken),
+          ts.factory.createTypeReferenceNode('T', []),
+        ),
       ],
-      /* type           */ ts.createTypeReferenceNode('Promise', [
-        ts.createIntersectionTypeNode([ts.createTypeReferenceNode('T', []), ts.createTypeQueryNode(ts.createIdentifier(moduleName))]),
+      /* type           */ ts.factory.createTypeReferenceNode('Promise', [
+        ts.factory.createIntersectionTypeNode([
+          ts.factory.createTypeReferenceNode('T', []),
+          ts.factory.createTypeQueryNode(ts.factory.createIdentifier(moduleName)),
+        ]),
       ]),
       /* body           */ undefined,
     ),
@@ -45,11 +52,10 @@ export function printEmscriptenModule(moduleName: string, nodes: ts.Statement[],
   //      ...
   //    }
   result.push(
-    ts.createModuleDeclaration(
-      /* decorators */ [],
-      /* modifiers  */ [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
-      /* name       */ ts.createIdentifier(moduleName),
-      /* body       */ ts.createModuleBlock([...emscriptenAdditions(), ...nodes]),
+    ts.factory.createModuleDeclaration(
+      /* modifiers  */ [ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)],
+      /* name       */ ts.factory.createIdentifier(moduleName),
+      /* body       */ ts.factory.createModuleBlock([...emscriptenAdditions(), ...nodes]),
     ),
   )
 
@@ -63,14 +69,15 @@ function emscriptenAdditions() {
   //
   //     function destroy(obj: any): void;
   result.push(
-    ts.createFunctionDeclaration(
-      /* decorators     */ [],
+    ts.factory.createFunctionDeclaration(
       /* modifiers      */ [],
       /* asteriskToken  */ undefined,
       /* name           */ 'destroy',
       /* typeParameters */ [],
-      /* parameters     */ [ts.createParameter([], [], undefined, 'obj', undefined, ts.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword))],
-      /* type           */ ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+      /* parameters     */ [
+        ts.factory.createParameterDeclaration([], undefined, 'obj', undefined, ts.factory.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)),
+      ],
+      /* type           */ ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
       /* body           */ undefined,
     ),
   )
@@ -79,24 +86,22 @@ function emscriptenAdditions() {
   //
   //     function _malloc(size: number): number;
   result.push(
-    ts.createFunctionDeclaration(
+    ts.factory.createFunctionDeclaration(
       undefined,
       undefined,
-      undefined,
-      ts.createIdentifier('_malloc'),
+      ts.factory.createIdentifier('_malloc'),
       undefined,
       [
-        ts.createParameter(
+        ts.factory.createParameterDeclaration(
           undefined,
           undefined,
+          ts.factory.createIdentifier('size'),
           undefined,
-          ts.createIdentifier('size'),
-          undefined,
-          ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
           undefined,
         ),
       ],
-      ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
       undefined,
     ),
   )
@@ -105,24 +110,22 @@ function emscriptenAdditions() {
   //
   //     function _free(size: number): number;
   result.push(
-    ts.createFunctionDeclaration(
+    ts.factory.createFunctionDeclaration(
       undefined,
       undefined,
-      undefined,
-      ts.createIdentifier('_free'),
+      ts.factory.createIdentifier('_free'),
       undefined,
       [
-        ts.createParameter(
+        ts.factory.createParameterDeclaration(
           undefined,
           undefined,
+          ts.factory.createIdentifier('ptr'),
           undefined,
-          ts.createIdentifier('ptr'),
-          undefined,
-          ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
+          ts.factory.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
           undefined,
         ),
       ],
-      ts.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
+      ts.factory.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
       undefined,
     ),
   )
@@ -139,13 +142,14 @@ function emscriptenAdditions() {
   ]
   for (const [name, type] of heaps) {
     result.push(
-      ts.createVariableStatement(
+      ts.factory.createVariableStatement(
         undefined,
-        ts.createVariableDeclarationList(
+        ts.factory.createVariableDeclarationList(
           [
-            ts.createVariableDeclaration(
-              ts.createIdentifier(name),
-              ts.createTypeReferenceNode(ts.createIdentifier(type), undefined),
+            ts.factory.createVariableDeclaration(
+              ts.factory.createIdentifier(name),
+              undefined,
+              ts.factory.createTypeReferenceNode(ts.factory.createIdentifier(type), undefined),
               undefined,
             ),
           ],

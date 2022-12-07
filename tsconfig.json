@@ -2,11 +2,13 @@
   "compilerOptions": {
     "outDir": "./dist",
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "declaration": true,
     "target": "es5",
     "newLine": "LF",
     "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "types"]
+    "typeRoots": ["node_modules/@types", "types"],
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules", "snapshots"]
